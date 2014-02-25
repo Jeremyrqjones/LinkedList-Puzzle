@@ -11,23 +11,23 @@ namespace LinkedListPuzzle
         {
             PersonLinkedList PersonList = new PersonLinkedList();
 
-            PersonLinkedList.Person Ted = new PersonLinkedList.Person("Ted", "Sully", 23, "12345", null);
-            PersonLinkedList.Person Reta = new PersonLinkedList.Person("Reta", "Lopez", 44, "12345", null);
-            PersonLinkedList.Person Sally = new PersonLinkedList.Person("Sally", "Hofsten", 36, "12345", null);
-            PersonLinkedList.Person Mike = new PersonLinkedList.Person("Mike", "Dunken", 55, "12345", null);
+            PersonLinkedList.Person Ted = new PersonLinkedList.Person("Ted", "Sully", 23, "12345", null, null);
+            PersonLinkedList.Person Reta = new PersonLinkedList.Person("Reta", "Lopez", 44, "12345", null, null);
+            PersonLinkedList.Person Sally = new PersonLinkedList.Person("Sally", "Hofsten", 36, "12345", null, null);
+            PersonLinkedList.Person Mike = new PersonLinkedList.Person("Mike", "Dunken", 55, "12345", null, null);
 
 
 
-            
+            PersonList.Add(Ted);
             PersonList.Add(Reta);
             PersonList.Add(Sally);
             PersonList.Add(Mike);
-            PersonList.Add(Ted);
+            
             
 
             //////////
             PersonList.ListNodes(PersonLinkedList.PersonField.LastName);
-            Console.WriteLine("/br");
+            //Console.WriteLine("/br");
             //PersonList.MergeIntoList(Ted, Sally, PersonLinkedList.PersonField.LastName);
             PersonList.SortList(PersonLinkedList.PersonField.LastName);
             PersonList.ListNodes(PersonLinkedList.PersonField.LastName);
@@ -39,12 +39,13 @@ namespace LinkedListPuzzle
     {
         public class Person
         {
-            public Person(string firstname, string lastname, int age, string zip, Person next)
+            public Person(string firstname, string lastname, int age, string zip,Person previous, Person next)
             {
                 FirstName = firstname;
                 LastName = lastname;
                 Age = age;
                 Zipcode = zip;
+                Previous = previous;
                 Next = next;
             }
             public string FirstName
@@ -68,6 +69,11 @@ namespace LinkedListPuzzle
                 set;
             }
             public Person Next
+            {
+                get;
+                set;
+            }
+            public Person Previous
             {
                 get;
                 set;
@@ -95,6 +101,7 @@ namespace LinkedListPuzzle
 
         private Person head;
         private Person headOfRightList;
+        private bool hadAnInsert = true;
         private Person current;
         private int size;
         public int Count
@@ -130,6 +137,7 @@ namespace LinkedListPuzzle
             {
                 // This is not the head. Make it current's next node.
                 current.Next = node;
+                node.Previous = current;
             }
 
             // Makes newly added node the current node
@@ -167,18 +175,24 @@ namespace LinkedListPuzzle
 
             return false;
         }
-        public bool SortList(PersonField field)
+        public void SortList(PersonField field)
         {
-            bool HadAnInsert = true;
-            Person tempNode = head;
-
-            while (HadAnInsert)
+            Person tempNode = head.Next;
+            int counter = 0;
+            while (counter <= Count)
             {
-                HadAnInsert =  MergeIntoList(head, tempNode, field);
-                tempNode = tempNode.Next;
+                MergeIntoList(head, tempNode, field);
+                if (tempNode.Next != null)
+                {
+                    tempNode = tempNode.Next;
+                }
+                else
+                {
+                    tempNode = head;
+                }
+                counter++;
             }
 
-            return true;
         }
         public void SplitList(PersonLinkedList ThisList)
         {
@@ -191,31 +205,43 @@ namespace LinkedListPuzzle
             //assign Next pointer of last node in L_list to null.
 	        //
         }
-        public bool MergeIntoList(Person Left, Person Right, PersonField field)//TODO: Account for replacing head node, conditional for between left with right.next == null, setting last node.Next to null
+        public void MergeIntoList(Person Left, Person Right, PersonField field)
         {
-            bool hadAnInsert = false;
+            hadAnInsert = false;
             int compInt = String.Compare(Left.GetFieldValue(field), Right.GetFieldValue(field), false);
             if (compInt > 0 && Left.Equals(head))//Right is less than current head, move to head
             {
+                if (Right.Next == null)//if Right.Next = null it is the last node, make last node.Next == null
+                {
+                    Right.Previous.Next = null;
+                }
+                else
+                {
+                    Right.Next.Previous = Left;
+                }
+                Right.Previous = null;
+                Left.Previous = Right;
+                Left.Next = Right.Next;
                 Right.Next = Left;
                 head = Right;
-                //TODO: if Right.Next = null it is the last node make last node.Next == null
                 this.ListNodes(PersonField.LastName);
-
-                hadAnInsert = true;
-                return hadAnInsert;
+                return;
             }
-            if (compInt < 0 && Left.Next == null)//Right is greater than last node, make it the last node
+            if (compInt < 0 && Left.Next == null)//Right is greater than last node, make Right the last node
             {
-                Person temp = Right.Next;
-                //TODO: rejoin list if taken out of middle of list. will split list
+                if (Right.Previous == null)//it is the current head
+                {
+                    head = Right.Next;
+                }
+                else
+                {
+                    Right.Previous.Next = Right.Next;  //rejoin list, if taken out of the middle, list will split 
+                }
                 Left.Next = Right;
+                Right.Previous = Left;
                 Right.Next = null;
-
                 this.ListNodes(PersonField.LastName);
-
-                hadAnInsert = true;
-                return hadAnInsert;
+                return;
             }
             if (Left.Next != null)
             {
@@ -228,23 +254,19 @@ namespace LinkedListPuzzle
                         head = Right.Next;
                     }
 
+                    Left.Next.Previous = Right;
                     Left.Next = Right;
+                    Right.Previous = Left;
                     Right.Next = temp;
-
                     this.ListNodes(PersonField.LastName);
-
-                    hadAnInsert = true;
-                    return hadAnInsert;
+                    return;
                 }
                 else
                 {
                     Left = Left.Next;
                     MergeIntoList(Left, Right, field);
-                }
-                
+                }   
             }
-
-            return hadAnInsert;
         }
 
         public List<Person> SeachByField(PersonField field,  string searchString)
@@ -274,6 +296,7 @@ namespace LinkedListPuzzle
                 Console.WriteLine(tempNode.FirstName + ",  " +tempNode.GetFieldValue(field));
                 tempNode = tempNode.Next;
             }
+            Console.WriteLine(" ");
         }
        
         
