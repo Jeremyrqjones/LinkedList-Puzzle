@@ -5,44 +5,15 @@ I need to be able to add and delete items, in addition to being able to sort and
 Describe a memory and performance efficient data structure and mechanism to accomplish this. 
 Use one or more of English, diagrams (PNG/JPEG), pseudo-code, C#, Javascript or Python to demonstrate how you would accomplish this. 
 
-For this problem I am making the assumtion that adding and deleting will be very frequent.
-
-For this problem I would consider using a Linked List data structure. 
 
 
-add(Person NewPerson, var field)
-{
-	add to list in correct order of field
-	
-	foreach(Person p in PersonList)
-	{
-		Start at the head and compare each p.field to NewPerson.field if lower add before current node. 
-		
-		if(p.field >= NewPerson.field)
-		{
-			PersonList.AddBefore(p, NewPerson);
-			return true;
-		}
-		
-	}
-}
+For this problem I would consider using a Linked List data structure.  A linked list is memory efficient in the since that once created the object itself doesn't move
+around in memory.  In a linked list each object is stored on the heap as oposed to an array which is stored on the stack and is a physicaly contiguas block of memory.
+if an array is changed, such as a sort, a new array is created and the data transfered to this new array.  This can become a problem with very large collections.
+A linked list however is not contiguous and a sort, insert or other changes are just moving pointers around. With very large collections This can make the performance
+of linked lists very good in comparison to an array. 
 
-Since the LinkedList should always be in order, a delete should would not need a special method.
+In my example I have implemented a doubly linked list written in C#.  I did a console app for simplicity so you guys could just copy one file and run it.  There are also a few
+small test that write to the console.   
 
-SortPersonList(LinkedList LL, var SortVariable)
-{
 
-foreach(Person p in LL)
-	{
-
-		Start at the head and compare each if lower add before current node. 
-		
-		if(p.SortVariable >= CurrentNode.SortVariable)
-		{
-			LL.AddBefore(p, CurrentNode);
-			
-		}
-		
-	
-	}
-}

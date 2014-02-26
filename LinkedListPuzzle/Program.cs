@@ -11,26 +11,40 @@ namespace LinkedListPuzzle
         {
             PersonLinkedList PersonList = new PersonLinkedList();
 
-            PersonLinkedList.Person Ted = new PersonLinkedList.Person("Ted", "Sully", 23, "12345", null, null);
-            PersonLinkedList.Person Reta = new PersonLinkedList.Person("Reta", "Lopez", 44, "12345", null, null);
-            PersonLinkedList.Person Sally = new PersonLinkedList.Person("Sally", "Hofsten", 36, "12345", null, null);
-            PersonLinkedList.Person Mike = new PersonLinkedList.Person("Mike", "Dunken", 55, "12345", null, null);
+            PersonLinkedList.Person Ted = new PersonLinkedList.Person("Ted", "Sully", 23, "12345");
+            PersonLinkedList.Person Reta = new PersonLinkedList.Person("Reta", "Lopez", 44, "12345");
+            PersonLinkedList.Person Sally = new PersonLinkedList.Person("Sally", "Hofsten", 36, "12345");
+            PersonLinkedList.Person Mike = new PersonLinkedList.Person("Mike", "Dunken", 55, "12345");
 
 
-
+            ////ADD
             PersonList.Add(Ted);
             PersonList.Add(Reta);
             PersonList.Add(Sally);
             PersonList.Add(Mike);
-            
-            
-
-            //////////
             PersonList.ListNodes(PersonLinkedList.PersonField.LastName);
-            //Console.WriteLine("/br");
-            //PersonList.MergeIntoList(Ted, Sally, PersonLinkedList.PersonField.LastName);
+
+            ////TEST FOR SORT
+            Console.WriteLine("***TEST FOR SORT***");
             PersonList.SortList(PersonLinkedList.PersonField.LastName);
             PersonList.ListNodes(PersonLinkedList.PersonField.LastName);
+
+            ////TEST FOR SEARCH BY FIELD
+            Console.WriteLine("***TEST FOR SEARCH BY FIELD***");
+            List<PersonLinkedList.Person> Persons = new List<PersonLinkedList.Person>();
+            Persons = PersonList.SeachByField(PersonLinkedList.PersonField.LastName, "Lopez");
+            foreach (PersonLinkedList.Person p in Persons)
+            {
+                Console.WriteLine(p.LastName + ", " + p.FirstName);
+            }
+            Console.WriteLine(" ");
+
+            ////TEST FOR DELETE
+            Console.WriteLine("***TEST FOR DELETE***");
+            PersonList.Delete(Sally);
+            PersonList.ListNodes(PersonLinkedList.PersonField.LastName);
+
+
             Console.ReadLine();
         }
     }
@@ -39,14 +53,14 @@ namespace LinkedListPuzzle
     {
         public class Person
         {
-            public Person(string firstname, string lastname, int age, string zip,Person previous, Person next)
+            public Person(string firstname, string lastname, int age, string zip)
             {
                 FirstName = firstname;
                 LastName = lastname;
                 Age = age;
                 Zipcode = zip;
-                Previous = previous;
-                Next = next;
+                Previous = null;
+                Next = null;
             }
             public string FirstName
             {
@@ -98,10 +112,7 @@ namespace LinkedListPuzzle
             }
         }
         public enum PersonField { FirstName, LastName, Age, Zipcode };
-
         private Person head;
-        private Person headOfRightList;
-        private bool hadAnInsert = true;
         private Person current;
         private int size;
         public int Count
@@ -111,18 +122,12 @@ namespace LinkedListPuzzle
                 return size;
             }
         }
-
-        
         public PersonLinkedList()
         {
             size = 0;
             head = null;
         }
 
-
-        /// <summary>
-        /// Add a new Node to the list.
-        /// </summary>
         public void Add(Person person)
         {
             size++;
@@ -143,37 +148,30 @@ namespace LinkedListPuzzle
             // Makes newly added node the current node
             current = node;
         }
-        public bool Delete(int Position)
+        public void Delete(Person person)
         {
-            if (Position == 1)
+            if (person.Equals(head))
             {
-                head = null;
-                current = null;
-                return true;
+                head = person.Next;
+                person.Next = null;
+                head.Previous = null;
+                size--;
+                return;
             }
-
-            if (Position > 1 && Position <= size)
+            if (person.Next == null)//This is the last node
             {
-                Person tempNode = head;
-
-                Person lastNode = null;
-                int count = 0;
-
-                while (tempNode != null)
-                {
-                    if (count == Position - 1)
-                    {
-                        lastNode.Next = tempNode.Next;
-                        return true;
-                    }
-                    count++;
-
-                    lastNode = tempNode;
-                    tempNode = tempNode.Next;
-                }
+                person.Previous.Next = null;
+                person.Previous = null;
+                size--;
             }
-
-            return false;
+            else
+            {
+                person.Next.Previous = person.Previous;
+                person.Previous.Next = person.Next;
+                person.Next = null;
+                person.Previous = null;
+                size--;
+            }
         }
         public void SortList(PersonField field)
         {
@@ -194,20 +192,9 @@ namespace LinkedListPuzzle
             }
 
         }
-        public void SplitList(PersonLinkedList ThisList)
-        {
-            //
-            //split list into L & R
-            //take the count of the list and /2.
-            int LeftCount = size / 2;
-            //if % != 0 take L_list + 1.
-            //assign new head to begining of R_list.//headOfRightList
-            //assign Next pointer of last node in L_list to null.
-	        //
-        }
+        
         public void MergeIntoList(Person Left, Person Right, PersonField field)
         {
-            hadAnInsert = false;
             int compInt = String.Compare(Left.GetFieldValue(field), Right.GetFieldValue(field), false);
             if (compInt > 0 && Left.Equals(head))//Right is less than current head, move to head
             {
@@ -224,7 +211,7 @@ namespace LinkedListPuzzle
                 Left.Next = Right.Next;
                 Right.Next = Left;
                 head = Right;
-                this.ListNodes(PersonField.LastName);
+                //this.ListNodes(PersonField.LastName);
                 return;
             }
             if (compInt < 0 && Left.Next == null)//Right is greater than last node, make Right the last node
@@ -240,7 +227,7 @@ namespace LinkedListPuzzle
                 Left.Next = Right;
                 Right.Previous = Left;
                 Right.Next = null;
-                this.ListNodes(PersonField.LastName);
+                //this.ListNodes(PersonField.Age);
                 return;
             }
             if (Left.Next != null)
@@ -252,13 +239,14 @@ namespace LinkedListPuzzle
                     if (Right.Equals(head))
                     {
                         head = Right.Next;
+                        head.Previous = null;
                     }
 
                     Left.Next.Previous = Right;
                     Left.Next = Right;
                     Right.Previous = Left;
                     Right.Next = temp;
-                    this.ListNodes(PersonField.LastName);
+                    //this.ListNodes(PersonField.Zipcode);
                     return;
                 }
                 else
@@ -290,10 +278,18 @@ namespace LinkedListPuzzle
         public void ListNodes(PersonField field)
         {
             Person tempNode = head;
-
+            string previous = string.Empty;
             while (tempNode != null)
             {
-                Console.WriteLine(tempNode.FirstName + ",  " +tempNode.GetFieldValue(field));
+                if (tempNode.Previous != null)
+                {
+                    previous = tempNode.Previous.FirstName;
+                }
+                else
+                {
+                    previous = "NULL";
+                }
+                Console.WriteLine(tempNode.FirstName + ",  " + tempNode.GetFieldValue(field) + " Previous: " + previous);
                 tempNode = tempNode.Next;
             }
             Console.WriteLine(" ");
