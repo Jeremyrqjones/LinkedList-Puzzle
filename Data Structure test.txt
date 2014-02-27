@@ -8,8 +8,10 @@ Use one or more of English, diagrams (PNG/JPEG), pseudo-code, C#, Javascript or 
 
 
 For this problem I would consider using a Linked List data structure.  A linked list is memory efficient in the since that once created the object itself doesn't move
-around in memory.  In a linked list each object is stored on the heap as oposed to an array which is stored on the stack and is a physicaly contiguas block of memory.
-if an array is changed, such as a sort, a new array is created and the data transfered to this new array.  This can become a problem with very large collections.
+around in memory and grows or shrinks according to only those objects added or removed.  In a linked list each object is stored on the heap as opposed to an array which
+ is stored on the stack and is a physically contiguous block of memory.
+if an array is changed, such as a sort, a new array is created and the data transferred to this new array.  Also if you use a List in C#, its underlying data structure
+is an array, and add to the end of this List, .Net will double the size of the new array to mitigate this creation step.  This can become a problem with very large collections.
 A linked list however is not contiguous and a sort, insert or other changes are just moving pointers around. With very large collections This can make the performance
 of linked lists very good in comparison to an array. 
 
